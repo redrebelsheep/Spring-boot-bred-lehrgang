@@ -2,6 +2,7 @@ package de.bredex.chatterbox.chat;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
@@ -18,11 +19,13 @@ import java.util.List;
 
 import javax.validation.ConstraintViolationException;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest
@@ -62,6 +65,18 @@ class ChatControllerTest {
 					.andExpect(status().isOk())
 					.andExpect(jsonPath("$..message").value("Message 1"));
 		then(chatService).should(times(1)).getMessages(anyString());
+	}
+
+
+	@Test
+	void testGetMessagesInValidRoom() throws Exception {
+		Chat msg = new Chat("Java", Instant.now(), "Ich");
+		msg.setMessage("Message 1");
+		given(chatService.getMessages("Java")).willReturn(Arrays.asList(msg));
+		given(roomRepository.contains(anyString())).willReturn(false);
+		mvc.perform(get("/rooms/Java/messages"))
+				.andExpect(status().isBadRequest())
+		 		.andExpect(result -> assertTrue(result.getResolvedException() instanceof ConstraintViolationException));
 	}
 	
 	@Test

@@ -62,13 +62,13 @@ public class ChatController {
 //		chat.setMessage(msg);
 		return ResponseEntity.status(HttpStatus.CREATED).body(chatService.newMessage(room, from, msg));
 	}
-
 	// Backup-Live-Coding: @ValidRoom
 	@GetMapping("/rooms/{room}/messages")
 	public List<Chat> getMessages(@PathVariable @ValidRoom String room) {
 		LOGGER.info("Messages of room {} have been requested", room);
 		return chatService.getMessages(room);
 	}
+
 
 	// Backup-Live-Coding: Exception-Handling
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
